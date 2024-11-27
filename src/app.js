@@ -14,7 +14,7 @@ app.get("/", (req, res) => {
 
 // Middleware
 // app.use(cors());
-// app.use(express.json());
+app.use(express.json());
 // app.use(i18n);
 
 // Routes
