@@ -1,4 +1,6 @@
 // app.js
+
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const i18n = require("./config/i18n");
@@ -6,7 +8,7 @@ const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const fileRoutes = require("./routes/fileRoutes");
 
-require("dotenv").config();
+
 
 const app = express();
 app.get("/", (req, res) => {
