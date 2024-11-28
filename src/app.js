@@ -4,6 +4,7 @@ const cors = require("cors");
 const i18n = require("./config/i18n");
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
+const fileRoutes = require("./routes/fileRoutes");
 
 require("dotenv").config();
 
@@ -19,8 +20,10 @@ app.use(express.json());
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/files", fileRoutes);
 
 // Database connection
 connectDB();
+
 
 module.exports = app;
