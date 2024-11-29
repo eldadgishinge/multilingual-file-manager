@@ -1,9 +1,9 @@
 const mongoose = require("mongoose");
 const path = require("path");
-const fs = require("fs").promises;
 const multer = require("multer");
 const { v4: uuidv4 } = require("uuid");
 
+// File Schema
 const FileSchema = new mongoose.Schema({
   filename: {
     type: String,
@@ -24,7 +24,7 @@ const FileSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-    required: true,
+    required: false, // Optional if user info isn't always available
   },
   path: {
     type: String,
@@ -36,30 +36,29 @@ const FileSchema = new mongoose.Schema({
   },
 });
 
-// File upload configuration
+// Multer Storage Configuration
 const storage = multer.diskStorage({
   destination: async (req, file, cb) => {
-    // Get the user-specific directory path
-    const uploadDir = path.join(__dirname, "../uploads", req.user._id.toString());
+    // Upload to a common directory regardless of user ID
+    const uploadDir = path.join(__dirname, "../uploads");
 
+    // Ensure the directory exists
     try {
-      // Create the user-specific folder if it doesn't exist
+      const fs = require("fs").promises;
       await fs.mkdir(uploadDir, { recursive: true });
-
-      // Provide the path to the destination folder
       cb(null, uploadDir);
-    } catch (error) {
-      cb(error, null);
+    } catch (err) {
+      cb(err, null);
     }
   },
   filename: function (req, file, cb) {
-    // Generate a unique filename using uuid
+    // Generate unique filename using uuid
     const uniqueSuffix = uuidv4();
     cb(null, `${uniqueSuffix}${path.extname(file.originalname)}`);
   },
 });
 
-// File upload middleware configuration
+// Multer Middleware
 const upload = multer({
   storage,
   limits: {
@@ -74,16 +73,14 @@ const upload = multer({
       "text/plain",
     ];
 
-    // Check if the file mimetype is allowed
     if (allowedMimetypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error("Invalid file type"), false); // Reject file if invalid mimetype
+      cb(new Error("Invalid file type"), false);
     }
   },
 });
 
-// Create the File model for MongoDB
 const File = mongoose.model("File", FileSchema);
 
 module.exports = { File, upload };

@@ -1,6 +1,6 @@
 const { upload } = require("../models/File");
 const fs = require("fs").promises;
-const File = require("../models/File");  // Assuming File model is required
+const { File } = require("../models/File");  // Ensure you use the destructured File model
 
 class FileController {
   // File upload
@@ -93,7 +93,7 @@ class FileController {
       await file.remove();
 
       // Delete file from disk
-      fs.unlink(file.path);
+      await fs.unlink(file.path);
 
       res.status(200).json({
         message: "File deleted successfully",
