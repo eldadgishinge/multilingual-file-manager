@@ -1,6 +1,6 @@
 const { upload } = require("../models/File");
 const fs = require("fs").promises;
-const { File } = require("../models/File");  // Ensure you use the destructured File model
+const { File } = require("../models/File");
 
 class FileController {
   // File upload
@@ -30,7 +30,7 @@ class FileController {
           mimetype: req.file.mimetype,
           size: req.file.size,
           user: req.user.id,
-          path: req.file.path,  // Save the path
+          path: req.file.path,
         });
 
         await file.save();
@@ -71,6 +71,37 @@ class FileController {
     }
   }
 
+  // Update file details
+  static async updateFile(req, res) {
+    try {
+      const file = await File.findOne({ _id: req.params.id });
+
+      if (!file) {
+        return res.status(404).json({
+          message: "File not found",
+        });
+      }
+
+      // Update file details
+      file.filename = req.body.filename || file.filename;
+      file.originalName = req.body.originalName || file.originalName;
+      file.mimetype = req.body.mimetype || file.mimetype;
+      file.size = req.body.size || file.size;
+
+      await file.save();
+
+      res.status(200).json({
+        message: "File updated successfully",
+        file,
+      });
+    } catch (error) {
+      res.status(500).json({
+        message: "Server error while updating file",
+        error: error.message,
+      });
+    }
+  }
+
   // Delete file
   static async deleteFile(req, res) {
     try {
@@ -83,7 +114,7 @@ class FileController {
       }
 
       // Check if file belongs to user
-      if (file.user.toString() !== req.user.id) {
+      if (file.user && file.user.toString() !== req.user.id) {
         return res.status(401).json({
           message: "Unauthorized",
         });
