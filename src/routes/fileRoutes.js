@@ -1,10 +1,16 @@
 const express = require("express");
 const router = express.Router();
-const fileController = require("../controllers/fileController");
-const authMiddleware = require("../middlewares/authMiddleware");
+const FileController = require("../controllers/fileController");
+const i18n = require('i18next');
+const middleware = require('i18next-express-middleware');
 
-router.post("/upload", authMiddleware, fileController.uploadFile);  // Ensure you're hitting this route
-router.get("/files", authMiddleware, fileController.getUserFiles);  // Use authMiddleware to ensure only authenticated users can get files
-router.delete("/files/:id", authMiddleware, fileController.deleteFile);  // Use authMiddleware to ensure only authenticated users can delete files
+// Use i18next middleware
+router.use(middleware.handle(i18n));
+
+// Define file routes
+router.post("/upload", FileController.uploadFile);
+router.get("/files", FileController.getUserFiles);
+router.put("/files/:id", FileController.updateFile);
+router.delete("/files/files/:id", FileController.deleteFile);  // Adjusted path
 
 module.exports = router;

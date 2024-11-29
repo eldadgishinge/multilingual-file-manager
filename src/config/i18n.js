@@ -1,20 +1,24 @@
-const i18next = require("i18next");
-const Backend = require("i18next-fs-backend");
-const middleware = require("i18next-http-middleware");
+// config/i18n.js
 
-i18next
+const i18n = require('i18next');
+const Backend = require('i18next-fs-backend');
+const Middleware = require('i18next-http-middleware');  // Correct middleware import
+
+i18n
   .use(Backend)
-  .use(middleware.LanguageDetector)
+  .use(Middleware.LanguageDetector)
   .init({
-    fallbackLng: "en",
-    preload: ["en", "fr"],
+    fallbackLng: 'en',
+    preload: ['en', 'es', 'fr'],
+    ns: ['translations'],
+    defaultNS: 'translations',
     backend: {
-      loadPath: "locales/{{lng}}.json",
+      loadPath: __dirname + '/../locales/{{lng}}/{{ns}}.json'
     },
     detection: {
-      order: ["querystring", "cookie"],
-      caches: ["cookie"],
-    },
+      order: ['querystring', 'cookie', 'header'],
+      caches: ['cookie']
+    }
   });
 
-module.exports = i18next;
+module.exports = i18n;

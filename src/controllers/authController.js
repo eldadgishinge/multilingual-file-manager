@@ -1,14 +1,13 @@
 const User = require("../models/User");
+
 class AuthController {
-  // user registration
+  // User registration
   static async register(req, res) {
     try {
       const { username, email, password, language } = req.body;
 
       // Check if user already exists
-      const existingUser = await User.findOne({
-        $or: [{ email }, { username }],
-      });
+      const existingUser = await User.findOne({ $or: [{ email }, { username }] });
 
       if (existingUser) {
         return res.status(400).json({
@@ -48,7 +47,7 @@ class AuthController {
     }
   }
 
-  // user login
+  // User login
   static async login(req, res) {
     try {
       const { email, password } = req.body;

@@ -1,4 +1,5 @@
 const { upload } = require("../models/File");
+const { fileQueue } = require("../config/redis");
 const fs = require("fs").promises;
 const { File } = require("../models/File");
 
@@ -23,26 +24,29 @@ class FileController {
       }
 
       try {
-        // Save file details to database
-        const file = new File({
-          filename: req.file.filename,
-          originalName: req.file.originalname,
-          mimetype: req.file.mimetype,
-          size: req.file.size,
-          user: req.user.id,
-          path: req.file.path,
+        // Enqueue file processing task
+        const tempPath = req.file.path;
+        const finalPath = `uploads/${req.file.filename}`;
+
+        await fileQueue.add({
+          fileData: {
+            filename: req.file.filename,
+            originalName: req.file.originalname,
+            mimetype: req.file.mimetype,
+            size: req.file.size,
+            user: req.user.id,
+            tempPath: tempPath,
+            finalPath: finalPath,
+          }
         });
 
-        await file.save();
-
         res.status(201).json({
-          message: "File uploaded successfully",
+          message: "File upload initiated",
           file: {
-            id: file._id,
-            filename: file.filename,
-            originalName: file.originalName,
-            mimetype: file.mimetype,
-            size: file.size,
+            filename: req.file.filename,
+            originalName: req.file.originalname,
+            mimetype: req.file.mimetype,
+            size: req.file.size,
           },
         });
       } catch (error) {
@@ -95,7 +99,7 @@ class FileController {
         file,
       });
     } catch (error) {
-      res.status(500).json({
+      res.status500().json({
         message: "Server error while updating file",
         error: error.message,
       });

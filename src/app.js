@@ -8,17 +8,15 @@ const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const fileRoutes = require("./routes/fileRoutes");
 
-
-
 const app = express();
 app.get("/", (req, res) => {
   res.send("Hello World");
 });
 
 // Middleware
-// app.use(cors());
+app.use(cors());
 app.use(express.json());
-// app.use(i18n);
+app.use(require('i18next-http-middleware').handle(i18n));  // Add i18n middleware correctly
 
 // Routes
 app.use("/api/auth", authRoutes);
@@ -26,6 +24,5 @@ app.use("/api/files", fileRoutes);
 
 // Database connection
 connectDB();
-
 
 module.exports = app;
