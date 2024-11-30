@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const { upload } = require("../models/File");
 const fs = require("fs").promises;
 const { File } = require("../models/File");
@@ -114,14 +115,14 @@ class FileController {
       }
 
       // Check if file belongs to user
-      if (file.user && file.user.toString() !== req.user.id) {
+      if (file.user && !file.user.equals(req.user.id)) {
         return res.status(401).json({
           message: "Unauthorized",
         });
       }
 
       // Delete file from database
-      await file.remove();
+      await File.deleteOne({ _id: req.params.id });
 
       // Delete file from disk
       await fs.unlink(file.path);
