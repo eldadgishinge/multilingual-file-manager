@@ -1,5 +1,6 @@
 const Queue = require("bull");
 const { File } = require("./models/File");
+const fs = require("fs").promises;
 
 // Initialize a Redis queue
 const fileQueue = new Queue("fileQueue", {
@@ -25,7 +26,9 @@ fileQueue.process(async (job) => {
       // Handle file delete logic
       console.log(`Deleting file: ${file.filename}`);
       await File.deleteOne({ _id: file._id });
-      await fs.unlink(file.path);
+      if (file.path) {
+        await fs.unlink(file.path);
+      }
       break;
 
     case "get":

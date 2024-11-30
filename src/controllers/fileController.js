@@ -32,15 +32,23 @@ class FileController {
         };
 
         // Add the file upload task to the queue
-        await fileQueue.add({
+        const job = await fileQueue.add({
           task: "upload",
           fileDetails,
         });
 
-        res.status(201).json({
-          message: "File upload task queued successfully",
-          fileDetails,
-        });
+        try {
+          const result = await job.finished();
+          res.status(201).json({
+            message: "File uploaded successfully",
+            result,
+          });
+        } catch (error) {
+          res.status(500).json({
+            message: "Server error during file upload",
+            error: error.message,
+          });
+        }
       } catch (error) {
         res.status(500).json({
           message: "Server error during file upload",
@@ -128,19 +136,27 @@ class FileController {
         });
       }
 
+      const fileDetails = {
+        ...file,
+      };
       // add delete to queue
-      await fileQueue.add({
+      const job = await fileQueue.add({
         task: "delete",
-        file,
+        fileDetails,
       });
 
-      res.status(200).json({
-        message: "File deleted successfully",
-        file: {
-          id: file._id,
-          filename: file.filename,
-        },
-      });
+      try {
+        const result = await job.finished();
+        res.status(200).json({
+          message: "File deleted successfully",
+          result,
+        });
+      } catch (error) {
+        res.status(500).json({
+          message: "Server error while deleting file",
+          error: error.message,
+        });
+      }
     } catch (error) {
       res.status(500).json({
         message: "Server error while deleting file",
