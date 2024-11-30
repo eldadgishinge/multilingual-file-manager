@@ -8,16 +8,14 @@ const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const fileRoutes = require("./routes/fileRoutes");
 
-
-
 const app = express();
 app.get("/", (req, res) => {
   res.send("Hello World");
 });
 
 // Middleware
-// app.use(cors());
 app.use(express.json());
+// app.use(cors());
 // app.use(i18n);
 
 // Routes

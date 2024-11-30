@@ -1,13 +1,11 @@
-const mongoose = require("mongoose");
 const { upload } = require("../models/File");
 const fs = require("fs").promises;
 const { File } = require("../models/File");
+const fileQueue = require("../queue");
 
 class FileController {
   // File upload
   static async uploadFile(req, res) {
-    console.log("requesttt-->", req.user, req.file);
-
     // Use the Multer upload middleware
     upload.single("file")(req, res, async (err) => {
       if (err) {
@@ -24,27 +22,24 @@ class FileController {
       }
 
       try {
-        // Save file details to database
-        const file = new File({
+        const fileDetails = {
           filename: req.file.filename,
           originalName: req.file.originalname,
           mimetype: req.file.mimetype,
           size: req.file.size,
           user: req.user.id,
           path: req.file.path,
+        };
+
+        // Add the file upload task to the queue
+        await fileQueue.add({
+          task: "upload",
+          fileDetails,
         });
 
-        await file.save();
-
         res.status(201).json({
-          message: "File uploaded successfully",
-          file: {
-            id: file._id,
-            filename: file.filename,
-            originalName: file.originalName,
-            mimetype: file.mimetype,
-            size: file.size,
-          },
+          message: "File upload task queued successfully",
+          fileDetails,
         });
       } catch (error) {
         res.status(500).json({
@@ -58,12 +53,24 @@ class FileController {
   // Get user files
   static async getUserFiles(req, res) {
     try {
-      const files = await File.find({ user: req.user.id });
-
-      res.status(200).json({
-        message: "Files retrieved successfully",
-        files,
+      // add getUserFiles to queue
+      const job = await fileQueue.add({
+        task: "get",
+        userId: req.user.id,
       });
+
+      try {
+        const files = await job.finished();
+        res.status(200).json({
+          message: "Files retrieved successfully",
+          files,
+        });
+      } catch (error) {
+        res.status(500).json({
+          message: "Server error while fetching files",
+          error: error.message,
+        });
+      }
     } catch (error) {
       res.status(500).json({
         message: "Server error while fetching files",
@@ -121,11 +128,11 @@ class FileController {
         });
       }
 
-      // Delete file from database
-      await File.deleteOne({ _id: req.params.id });
-
-      // Delete file from disk
-      await fs.unlink(file.path);
+      // add delete to queue
+      await fileQueue.add({
+        task: "delete",
+        file,
+      });
 
       res.status(200).json({
         message: "File deleted successfully",

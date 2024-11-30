@@ -1,12 +1,43 @@
-const Queue = require('bull');
-const redis = require('./config/redis');
+const Queue = require("bull");
+const { File } = require("./models/File");
 
-const fileQueue = new Queue('file-tasks', { redis: { port: redis.options.port, host: redis.options.host } });
+// Initialize a Redis queue
+const fileQueue = new Queue("fileQueue", {
+  redis: {
+    host: "127.0.0.1",
+    port: 6379,
+  },
+});
 
+// Define a job processor for the queue
 fileQueue.process(async (job) => {
-    console.log('Processing job:', job.id);
-    // Simulate file processing
-    return Promise.resolve();
+  const { task, fileDetails, userId } = job.data;
+
+  const file = new File(fileDetails);
+  switch (task) {
+    case "upload":
+      // Handle file upload logic
+      console.log(`Uploading file: ${file.originalName}`);
+      await file.save();
+      return Promise.resolve();
+
+    case "delete":
+      // Handle file delete logic
+      console.log(`Deleting file: ${file.filename}`);
+      await File.deleteOne({ _id: file._id });
+      await fs.unlink(file.path);
+      break;
+
+    case "get":
+      // Handle get user files logic
+      console.log(`Getting user files for user: ${userId}`);
+      const files = await File.find({ user: userId });
+      return Promise.resolve(files);
+
+    default:
+      console.log(`Unknown task: ${task}`);
+      break;
+  }
 });
 
 module.exports = fileQueue;
