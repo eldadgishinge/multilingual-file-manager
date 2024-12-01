@@ -66,7 +66,7 @@ class AuthController {
 
       if (!isMatch) {
         return res.status(401).json({
-          message: "Invalid credentials",
+          message: "Invalid credentials, password is incorrect",
         });
       }
 
