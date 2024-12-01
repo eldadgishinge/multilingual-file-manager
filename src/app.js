@@ -3,10 +3,11 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const i18n = require("./config/i18n");
+const i18next = require("./config/i18n");
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const fileRoutes = require("./routes/fileRoutes");
+const i18nextMiddleware = require("i18next-http-middleware");
 
 const app = express();
 app.get("/", (req, res) => {
@@ -15,8 +16,7 @@ app.get("/", (req, res) => {
 
 // Middleware
 app.use(express.json());
-// app.use(cors());
-// app.use(i18n);
+app.use(i18nextMiddleware.handle(i18next));
 
 // Routes
 app.use("/api/auth", authRoutes);

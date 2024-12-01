@@ -9,8 +9,9 @@ i18next
     fallbackLng: "en",
     preload: ["en", "fr"],
     backend: {
-      loadPath: "locales/{{lng}}.json",
+      loadPath: "locales/{{lng}}/translation.json",
     },
+    saveMissing: true,
     detection: {
       order: ["querystring", "cookie"],
       caches: ["cookie"],
