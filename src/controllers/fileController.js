@@ -99,17 +99,30 @@ class FileController {
       }
 
       // Update file details
-      file.filename = req.body.filename || file.filename;
-      file.originalName = req.body.originalName || file.originalName;
-      file.mimetype = req.body.mimetype || file.mimetype;
-      file.size = req.body.size || file.size;
+      const fileDetails = {
+        filename: req.body.filename || file.filename,
+        originalName: req.body.originalName || file.originalName,
+        mimetype: req.body.mimetype || file.mimetype,
+        size: req.body.size || file.size,
+      };
 
-      await file.save();
-
-      res.status(200).json({
-        message: "File updated successfully",
-        file,
+      const job = await fileQueue.add({
+        task: "update",
+        fileDetails,
       });
+
+      try {
+        const result = await job.finished();
+        res.status(200).json({
+          message: "File updated successfully",
+          result,
+        });
+      } catch (error) {
+        res.status(500).json({
+          message: "Server error while updating file",
+          error: error.message,
+        });
+      }
     } catch (error) {
       res.status(500).json({
         message: "Server error while updating file",

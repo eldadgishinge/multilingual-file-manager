@@ -37,6 +37,13 @@ fileQueue.process(async (job) => {
       const files = await File.find({ user: userId });
       return Promise.resolve(files);
 
+
+    case "update":
+      // Handle update file logic
+      console.log(`Updating file: ${fileDetails.filename}`);
+      await file.save();
+      return Promise.resolve();
+
     default:
       console.log(`Unknown task: ${task}`);
       break;

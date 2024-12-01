@@ -3,8 +3,9 @@ const router = express.Router();
 const fileController = require("../controllers/fileController");
 const authMiddleware = require("../middlewares/authMiddleware");
 
-router.post("/upload", authMiddleware, fileController.uploadFile);  // Ensure you're hitting this route
-router.get("/get", authMiddleware, fileController.getUserFiles);  // Use authMiddleware to ensure only authenticated users can get files
-router.delete("/:id", authMiddleware, fileController.deleteFile);  // Use authMiddleware to ensure only authenticated users can delete files
+router.post("/upload", authMiddleware, fileController.uploadFile);
+router.get("/get", authMiddleware, fileController.getUserFiles);
+router.delete("/:id", authMiddleware, fileController.deleteFile);
+router.put("/:id", authMiddleware, fileController.updateFile);
 
 module.exports = router;
